@@ -5,14 +5,19 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const quiche_dep = b.dependency("quiche", .{});
+    const boring_sys = b.dependency("boring_sys", .{});
 
     const release = optimize != .Debug;
     const profile_dir = if (release) "release" else "debug";
     const rust_triple = rustTarget(b, target.result);
 
-    const cargo = b.addSystemCommand(&.{
-        "cargo",
+    const cargo = b.addSystemCommand(&.{"sh"});
+    cargo.addFileArg(b.path("build-cargo.sh"));
+    cargo.addArgs(&.{ b.graph.zig_exe, target.result.zigTriple(b.allocator) catch @panic("OOM"), rust_triple });
+    const cargo_target = cargo.addOutputDirectoryArg("target");
+    cargo.addArgs(&.{
         "build",
+        "--locked",
         // Without --quiet, cargo's "Compiling ..." progress messages go to stderr,
         // which Zig's Run step treats as diagnostic output and reports under a
         // misleading "failed command:" header (even though cargo exited cleanly).
@@ -23,9 +28,7 @@ pub fn build(b: *std.Build) void {
         rust_triple,
     });
     if (release) cargo.addArg("--release");
-    cargo.addArg("--target-dir");
     cargo.setCwd(quiche_dep.path("."));
-    const cargo_target = cargo.addOutputDirectoryArg("target");
 
     const lib_subpath = b.fmt("{s}/{s}/libquiche.a", .{ rust_triple, profile_dir });
     const libquiche = cargo_target.path(b, lib_subpath);
@@ -36,10 +39,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     translate.addIncludePath(quiche_dep.path("include"));
-    translate.addIncludePath(quiche_dep.path("deps/boringssl/src/include"));
+    translate.addIncludePath(boring_sys.path("deps/boringssl/include"));
     const quiche_mod = translate.addModule("quiche");
-    // libquiche.a has no C++ stdlib usage, but Rust's std references the Itanium-ABI
-    // unwinder (rust_eh_personality, _Unwind_*); link_libcpp pulls libunwind transitively.
+    // BoringSSL needs the C++ runtime; Rust's std also needs its unwinder.
     quiche_mod.link_libcpp = true;
     quiche_mod.addObjectFile(libquiche);
 
@@ -51,6 +53,8 @@ pub fn build(b: *std.Build) void {
     test_mod.addImport("quiche", quiche_mod);
 
     const unit_tests = b.addTest(.{ .root_module = test_mod });
+    const check_step = b.step("check", "Compile quiche-zig binding tests without running them");
+    check_step.dependOn(&unit_tests.step);
     const run_unit_tests = b.addRunArtifact(unit_tests);
 
     const test_step = b.step("test", "Build and run quiche-zig binding tests");

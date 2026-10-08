@@ -4,13 +4,19 @@
     .fingerprint = 0xdccda9f0a3c274ae,
     .dependencies = .{
         .quiche = .{
-            .url = "https://static.crates.io/crates/quiche/quiche-0.28.0.crate",
-            .hash = "N-V-__8AAJ1bNgFxv6LRy4xAO27QsTK-XNfqe0BMfRodoMrg",
+            .url = "https://static.crates.io/crates/quiche/quiche-0.30.0.crate",
+            .hash = "N-V-__8AAC2xKgBsbwDxUa1ahrCHHFTroXbZ5VB1wKujzAsD",
+        },
+        // Match the TLS headers to the boring-sys version in quiche's Cargo.lock.
+        .boring_sys = .{
+            .url = "https://static.crates.io/crates/boring-sys/boring-sys-5.2.0.crate",
+            .hash = "N-V-__8AACYqyQGoQp58LwOCIGqZ89ol7eF6jQGJp4KUu9vQ",
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
+        "build-cargo.sh",
         "src",
     },
 }

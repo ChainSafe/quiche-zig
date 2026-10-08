@@ -5,13 +5,19 @@ QUIC + HTTP/3 implementation. A single `quiche` module exposes both quiche's C
 API and the bundled BoringSSL headers (`SSL_*`, `EVP_*`, ...). The static library
 contains BoringSSL inlined, so no separate ssl/crypto link step is needed.
 
-Currently builds quiche `0.28.0` from the upstream crate.
+Currently builds quiche `0.30.0` from the upstream crate, using its locked
+`boring-sys` `5.2.0` dependency for BoringSSL. The Zig dependency on `boring-sys`
+supplies matching C headers and must track quiche's `Cargo.lock`.
 
 ## Requirements
 
 - Zig 0.16+
-- A Rust toolchain (`cargo`) on `PATH`. For cross-compiling, install the
+- Rust 1.88+ (`cargo`) on `PATH`, CMake 3.22+, and libclang for
+  BoringSSL's Rust bindings. For cross-compiling, install the
   matching `rustup target`.
+
+The build uses Zig's C/C++ compiler and linker for BoringSSL and Cargo, including
+cross-compilation, so they share the same C++ runtime as the consuming Zig code.
 
 ## Use
 
