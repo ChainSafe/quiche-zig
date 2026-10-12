@@ -17,6 +17,7 @@
         "build.zig",
         "build.zig.zon",
         "build-cargo.sh",
+        "patches",
         "src",
     },
 }

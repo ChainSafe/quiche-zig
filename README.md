@@ -9,10 +9,16 @@ Currently builds quiche `0.30.0` from the upstream crate, using its locked
 `boring-sys` `5.2.0` dependency for BoringSSL. The Zig dependency on `boring-sys`
 supplies matching C headers and must track quiche's `Cargo.lock`.
 
+The build applies `patches/stream-capacity-error.patch` to a copy of the crate.
+It adds `quiche_conn_stream_capacity_with_error`, which preserves the application
+error code from `STOP_SENDING` without a zero-byte stream write. The existing C
+API remains available. The patch also delivers STOP notifications when the
+application has already consumed the stream's writable edge.
+
 ## Requirements
 
 - Zig 0.16+
-- Rust 1.88+ (`cargo`) on `PATH`, CMake 3.22+, and libclang for
+- Rust 1.88+ (`cargo`) on `PATH`, CMake 3.22+, `patch`, and libclang for
   BoringSSL's Rust bindings. For cross-compiling, install the
   matching `rustup target`.
 

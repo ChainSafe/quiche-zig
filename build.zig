@@ -7,6 +7,11 @@ pub fn build(b: *std.Build) void {
     const quiche_dep = b.dependency("quiche", .{});
     const boring_sys = b.dependency("boring_sys", .{});
 
+    const patch = b.addSystemCommand(&.{ "sh", "-c", "cp -R \"$1/.\" \"$2\" && patch -d \"$2\" -p1 < \"$3\"", "patch-quiche" });
+    patch.addDirectoryArg(quiche_dep.path("."));
+    const source = patch.addOutputDirectoryArg("quiche");
+    patch.addFileArg(b.path("patches/stream-capacity-error.patch"));
+
     const release = optimize != .Debug;
     const profile_dir = if (release) "release" else "debug";
     const rust_triple = rustTarget(b, target.result);
@@ -28,7 +33,7 @@ pub fn build(b: *std.Build) void {
         rust_triple,
     });
     if (release) cargo.addArg("--release");
-    cargo.setCwd(quiche_dep.path("."));
+    cargo.setCwd(source);
 
     const lib_subpath = b.fmt("{s}/{s}/libquiche.a", .{ rust_triple, profile_dir });
     const libquiche = cargo_target.path(b, lib_subpath);
@@ -38,7 +43,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    translate.addIncludePath(quiche_dep.path("include"));
+    translate.addIncludePath(source.path(b, "include"));
     translate.addIncludePath(boring_sys.path("deps/boringssl/include"));
     const quiche_mod = translate.addModule("quiche");
     // BoringSSL needs the C++ runtime; Rust's std also needs its unwinder.

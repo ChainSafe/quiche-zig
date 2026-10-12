@@ -1,0 +1,65 @@
+--- a/include/quiche.h
++++ b/include/quiche.h
+@@ -442,6 +442,13 @@
+ // Returns the stream's send capacity in bytes.
+ ssize_t quiche_conn_stream_capacity(quiche_conn *conn, uint64_t stream_id);
+ 
++// Returns the stream's send capacity in bytes.
++// out_error_code is only set when STREAM_STOPPED is returned, to the application
++// error code received in STOP_SENDING. This call may reclaim a completed stream.
++ssize_t quiche_conn_stream_capacity_with_error(quiche_conn *conn,
++                                               uint64_t stream_id,
++                                               uint64_t *out_error_code);
++
+ // Returns true if the stream has data that can be read.
+ bool quiche_conn_stream_readable(const quiche_conn *conn, uint64_t stream_id);
+ 
+--- a/src/ffi.rs
++++ b/src/ffi.rs
+@@ -1028,6 +1028,22 @@
+         Ok(v) => v as ssize_t,
+ 
+         Err(e) => e.to_c(),
++    }
++}
++
++#[no_mangle]
++pub extern "C" fn quiche_conn_stream_capacity_with_error(
++    conn: &mut Connection, stream_id: u64, out_error_code: &mut u64,
++) -> ssize_t {
++    match conn.stream_capacity(stream_id) {
++        Ok(v) => v as ssize_t,
++
++        Err(e) => {
++            if let Error::StreamStopped(error) = e {
++                *out_error_code = error;
++            }
++            e.to_c()
++        },
+     }
+ }
+ 
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -8512,8 +8512,6 @@
+                     Err(e) => return Err(e),
+                 };
+ 
+-                let was_writable = stream.is_writable();
+-
+                 let priority_key = Arc::clone(&stream.priority_key);
+ 
+                 // Save the buffered length before stopping (stop clears the
+@@ -8558,9 +8556,9 @@
+ 
+                     self.streams.insert_reset(stream_id, error_code, final_size);
+ 
+-                    if !was_writable {
+-                        self.streams.insert_writable(&priority_key);
+-                    }
++                    // The application may have consumed the writable edge
++                    // without exhausting the stream's send capacity.
++                    self.streams.insert_writable(&priority_key);
+ 
+                     self.stopped_stream_remote_count =
+                         self.stopped_stream_remote_count.saturating_add(1);
