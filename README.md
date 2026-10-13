@@ -15,6 +15,9 @@ error code from `STOP_SENDING` without a zero-byte stream write. The existing C
 API remains available. The patch also delivers STOP notifications when the
 application has already consumed the stream's writable edge.
 
+`patches/transport-params-layout.patch` gives the transport-parameter result its
+C layout, matching `quiche_transport_params` in the public header.
+
 ## Requirements
 
 - Zig 0.16+

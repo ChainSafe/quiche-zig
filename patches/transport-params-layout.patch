@@ -1,0 +1,10 @@
+--- a/src/ffi.rs
++++ b/src/ffi.rs
+@@ -1372,6 +1372,7 @@
+     tx_buffered_inconsistent: bool,
+ }
+ 
++#[repr(C)]
+ pub struct TransportParams {
+     max_idle_timeout: u64,
+     max_udp_payload_size: u64,

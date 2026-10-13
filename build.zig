@@ -7,10 +7,11 @@ pub fn build(b: *std.Build) void {
     const quiche_dep = b.dependency("quiche", .{});
     const boring_sys = b.dependency("boring_sys", .{});
 
-    const patch = b.addSystemCommand(&.{ "sh", "-c", "cp -R \"$1/.\" \"$2\" && patch -d \"$2\" -p1 < \"$3\"", "patch-quiche" });
+    const patch = b.addSystemCommand(&.{ "sh", "-c", "cp -R \"$1/.\" \"$2\" && patch -d \"$2\" -p1 < \"$3\" && patch -d \"$2\" -p1 < \"$4\"", "patch-quiche" });
     patch.addDirectoryArg(quiche_dep.path("."));
     const source = patch.addOutputDirectoryArg("quiche");
     patch.addFileArg(b.path("patches/stream-capacity-error.patch"));
+    patch.addFileArg(b.path("patches/transport-params-layout.patch"));
 
     const release = optimize != .Debug;
     const profile_dir = if (release) "release" else "debug";
