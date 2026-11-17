@@ -10,5 +10,5 @@ test "quiche and BoringSSL bindings link" {
     const config = quiche.quiche_config_new(quiche.QUICHE_PROTOCOL_VERSION) orelse return error.QuicheConfigFailed;
     defer quiche.quiche_config_free(config);
 
-    try std.testing.expectEqualStrings("0.30.0", std.mem.span(quiche.quiche_version()));
+    try std.testing.expectEqualStrings("0.30.1", std.mem.span(quiche.quiche_version()));
 }

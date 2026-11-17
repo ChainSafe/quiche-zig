@@ -1,6 +1,6 @@
 --- a/src/ffi.rs
 +++ b/src/ffi.rs
-@@ -1372,6 +1372,7 @@
+@@ -1391,6 +1391,7 @@
      tx_buffered_inconsistent: bool,
  }
  

@@ -4,8 +4,8 @@
     .fingerprint = 0xdccda9f0a3c274ae,
     .dependencies = .{
         .quiche = .{
-            .url = "https://static.crates.io/crates/quiche/quiche-0.30.0.crate",
-            .hash = "N-V-__8AAC2xKgBsbwDxUa1ahrCHHFTroXbZ5VB1wKujzAsD",
+            .url = "https://static.crates.io/crates/quiche/quiche-0.30.1.crate",
+            .hash = "N-V-__8AAD-XLADVbrFWyWoCzItpQqrwrSMLkz3myy9LcteQ",
         },
         // Match the TLS headers to the boring-sys version in quiche's Cargo.lock.
         .boring_sys = .{
