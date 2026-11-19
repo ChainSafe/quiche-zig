@@ -17,6 +17,8 @@ if [ "${1-}" = --driver ]; then
       --target=* | -mmacosx-version-min=*) continue ;;
       # Cargo also links an unused cdylib; Zig's Darwin linker needs these adjustments.
       -liconv) continue ;;
+      # Newer Rust passes this erratum workaround on aarch64 Linux; Zig's linker rejects it.
+      -Wl,--fix-cortex-a53-843419) continue ;;
       -Wl,*-compatibility_version,*) arg=$(printf '%s' "$arg" | sed -E 's/(-compatibility_version,[0-9]+)$/\1.0.0/') ;;
     esac
     set -- "$@" "$arg"
